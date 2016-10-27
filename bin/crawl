@@ -1,0 +1,6 @@
+#!/usr/bin/env ruby
+
+require_relative "../lib/crawler"
+
+crawler = Crawler::Crawl.new(ARGV[0])
+crawler.execute
