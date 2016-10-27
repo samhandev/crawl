@@ -49,5 +49,18 @@ RSpec.describe Crawler::PageProcessor do
       expect(processed_page.links).to include("https://gocardless.com/about/")
       expect(processed_page.links).to include("https://gocardless.com/contactus")
     end
+
+    it "should not prepend a link if it is a mailto email link" do
+      link_extractor = instance_double("LinkExtractor", :links => ["mailto:help@domain.com"])
+      asset_extractor = instance_double("StaticAssetExtractor", :assets => [])
+      http_response = double("Response", :body => "test")
+      http_client = double("Faraday", :get => http_response)
+      processor = described_class.new(http_client: http_client, base_url: "https://gocardless.com", link_extractor: link_extractor, asset_extractor: asset_extractor)
+      page = Crawler::Page.new(url: "https://gocardless.com")
+
+      processed_page = processor.process(page)
+
+      expect(processed_page.links).to include("mailto:help@domain.com")
+    end
   end
 end

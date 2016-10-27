@@ -48,6 +48,5 @@ RSpec.describe Crawler::Scheduler do
 
       expect(subject.empty?).to eq(true)
     end
-
   end
 end

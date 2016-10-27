@@ -11,7 +11,7 @@ RSpec.describe Crawler::LinkExtractor do
     end
 
     it "should find a link" do
-      expect(subject.links(single_link_page)).to eq(["/link_a"])
+      expect(subject.links(single_link_page)).to eq(["/link_a", "mailto:help@email.com"])
     end
 
     it "should ignore links beginning with #" do

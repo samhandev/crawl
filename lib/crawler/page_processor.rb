@@ -26,7 +26,7 @@ module Crawler
     def prepend_relative_urls(links)
       links.map do |link|
         encoded_link = URI.encode(link)
-        if (URI(encoded_link).host == nil)
+        if (URI(encoded_link).host == nil) && URI(encoded_link).scheme != "mailto"
           base_url + encoded_link
         else
           encoded_link

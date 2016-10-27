@@ -23,4 +23,5 @@ Should probably store these to disk / database as we are processing so that we s
 [] write tests for the `Crawl` class!
 [] formatting of information. Currently we just pretty print the hash.
 [] refactor `StaticAssetExtractor` class so that it takes a list of functions that describe the different types of assets to extract
+[] this doesn't seem to differentiate between the urls with a trailing `/` or without a trailing `/` as they could be considered different.
 
