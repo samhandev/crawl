@@ -24,4 +24,7 @@ Should probably store these to disk / database as we are processing so that we s
 [] formatting of information. Currently we just pretty print the hash.
 [] refactor `StaticAssetExtractor` class so that it takes a list of functions that describe the different types of assets to extract
 [] this doesn't seem to differentiate between the urls with a trailing `/` or without a trailing `/` as they could be considered different.
+[] take into account the depth we are crawling. Maybe provide a maximum depth
+[] languages. Provide a list of lang that the crawler will crawl through.
+Or even take into account `link rel="alternate" hreflang` to check whether we should crawl alternate language pages.
 
