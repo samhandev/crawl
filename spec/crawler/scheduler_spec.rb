@@ -48,5 +48,14 @@ RSpec.describe Crawler::Scheduler do
 
       expect(subject.empty?).to eq(true)
     end
+
+    it "should add all the pages links to the queue" do
+      links = ["https://gocardless.com/about/", "https://gocardless.com/contactus"]
+      page = Crawler::Page.new(url: "https://gocardless.com", links: links)
+
+      subject.add_page_links(page)
+
+      expect(subject.queue_length).to eq(2)
+    end
   end
 end
