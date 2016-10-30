@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'thread'
 
 RSpec.describe Crawler::Scheduler do
   describe "Decides if url is added to the queue based on disallowed and visited lists" do
@@ -56,6 +57,23 @@ RSpec.describe Crawler::Scheduler do
       subject.add_page_links(page)
 
       expect(subject.queue_length).to eq(2)
+    end
+
+    it "should know how many threads are waiting due to empty queue" do
+      threads = []
+      2.times do
+        threads << Thread.new do
+          subject.get_next
+        end
+      end
+
+      #wait for the threads to call the get_next method
+      sleep(0.1)
+
+      expect(subject.num_waiting_threads).to eq(2)
+      threads.each(&:exit)
+      threads.each(&:join)
+      expect(subject.num_waiting_threads).to eq(0)
     end
   end
 end

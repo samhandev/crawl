@@ -1,4 +1,5 @@
 require 'uri'
+require 'thread'
 
 module Crawler
   class Scheduler
@@ -7,6 +8,7 @@ module Crawler
       @disallowed_paths = disallowed_paths
       @queue = Queue.new
       @queued_urls = {}
+      @semaphore = Mutex.new
     end
 
     def add_page_links(page)
@@ -16,10 +18,12 @@ module Crawler
     end
 
     def add(url:, parent: "root")
-      if can_queue_url?(url)
-        queued_urls[url] = true
-        queue.push(Page.new(url: url, parent: parent))
-      end
+      semaphore.synchronize {
+        if can_queue_url?(url)
+          queued_urls[url] = true
+          queue.push(Page.new(url: url, parent: parent))
+        end
+      }
     end
 
     def get_next
@@ -27,16 +31,20 @@ module Crawler
     end
 
     def empty?
-      @queue.empty?
+      queue.empty?
     end
 
     def queue_length
-      @queue.length
+      queue.length
+    end
+
+    def num_waiting_threads
+      queue.num_waiting
     end
 
     private
 
-    attr_accessor :queue, :queued_urls, :base_url
+    attr_accessor :queue, :queued_urls, :base_url, :semaphore
 
     def can_queue_url?(url)
       # add to the queue only if we have not previously queued

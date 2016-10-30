@@ -1,5 +1,6 @@
 require 'faraday'
 require 'pp'
+require 'thread'
 
 module Crawler
   class Crawl
@@ -17,6 +18,7 @@ module Crawler
                                           base_url: url,
                                           link_extractor: LinkExtractor.new,
                                           asset_extractor: StaticAssetExtractor.new)
+      @semaphore = Mutex.new
     end
 
     def execute
@@ -27,15 +29,41 @@ module Crawler
     attr_accessor :url_queue, :visited_urls, :queued_urls, :page_processor
 
     def process_scheduler
-      puts "running the scheduler"
-      while !@scheduler.empty?
-        page = @scheduler.get_next
-        processed_page = page_processor.process(page)
-        visited_urls[processed_page.url] = processed_page
-        @scheduler.add_page_links(page)
+      # start threads to read and process from the schedule queued
+      threads = []
+
+      5.times do
+        threads << Thread.new do
+          puts "processing thread started..."
+          thread_page_processor = PageProcessor.new(http_client: Faraday.new,
+                                                     base_url: @url,
+                                                     link_extractor: LinkExtractor.new,
+                                                     asset_extractor: StaticAssetExtractor.new)
+          loop do
+            page = @scheduler.get_next
+            processed_page = thread_page_processor.process(page)
+            add_processed_page(processed_page)
+            @scheduler.add_page_links(page)
+          end
+        end
       end
 
+      #wait till all threads are finished
+      while (@scheduler.num_waiting_threads < threads.count)
+        sleep(1)
+      end
+
+      threads.each(&:exit)
+      threads.each(&:join)
+
       pp(visited_urls)
+    end
+
+    def add_processed_page(page)
+      @semaphore.synchronize {
+        visited_urls[page.url] = page
+      }
+
     end
 
     def get_disallowed_paths
