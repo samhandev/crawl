@@ -1,6 +1,7 @@
 require 'faraday'
 require 'pp'
 require 'thread'
+require 'json'
 
 module Crawler
   class Crawl
@@ -23,6 +24,12 @@ module Crawler
 
     def execute
       process_scheduler
+
+      pp(visited_urls)
+      File.open("output.json", "w") do |f|
+        f.write(visited_urls.to_json)
+      end
+      puts "Unique links visited: #{visited_urls.length}"
     end
 
     private
@@ -32,7 +39,7 @@ module Crawler
       # start threads to read and process from the schedule queued
       threads = []
 
-      5.times do
+      10.times do
         threads << Thread.new do
           puts "processing thread started..."
           thread_page_processor = PageProcessor.new(http_client: Faraday.new,
@@ -56,7 +63,7 @@ module Crawler
       threads.each(&:exit)
       threads.each(&:join)
 
-      pp(visited_urls)
+      visited_urls
     end
 
     def add_processed_page(page)
